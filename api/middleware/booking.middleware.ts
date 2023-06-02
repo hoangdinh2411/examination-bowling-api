@@ -18,6 +18,20 @@ export const checkBody = async (
     return res.status(400).json({ success: false, message: 'No body found' });
   try {
     await bookingBodySchema.validateAsync(req.body);
+
+    if (Lines.checkLinesNotDuplicated(req.body.line_ids)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot book the same line twice`,
+      });
+    }
+    const lines = await Lines.checkLineIds(req.body.line_ids);
+    if (!lines || lines.length !== req.body.line_ids.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot book the lines. Please try again',
+      });
+    }
     if (
       req.body.booking_date === getCurrentDate() &&
       req.body.booking_time < getCurrentHour()
@@ -43,13 +57,7 @@ export const checkBody = async (
       req.body.amount_of_player,
       req.body.line_ids
     );
-    const lines = await Lines.checkLineIds(req.body.line_ids);
-    if (!lines || lines.length !== req.body.line_ids.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot book the lines. Please try again',
-      });
-    }
+
     req.body.end_time = end_time;
     req.body.total_price = total_price;
     next();

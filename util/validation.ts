@@ -51,7 +51,7 @@ export const bookingBodySchema = Joi.object({
       'array.length': 'Amount of shoe must be equal to amount of player',
       'any.required': 'Shoe ids is required',
     }),
-  line_ids: Joi.array().min(1).required().messages({
+  line_ids: Joi.array().min(1).max(CONFIG.number_of_lines).required().messages({
     'array.min': 'Have to book at least 1 lane',
     'any.required': 'Lane is required',
   }),
